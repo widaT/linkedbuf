@@ -34,7 +34,7 @@ func TestLinkedBuffer(t *testing.T) {
 
 	t.Errorf("%s ,%d,%s", data[:n], n, err)
 
-	c.Discurd()
+	c.Drop()
 
 	linkedbuf.Gc()
 
@@ -51,7 +51,7 @@ func TestIoCopy(t *testing.T) {
 	readNum := 0
 
 	c := &ConpositeBuf{}
-	defer c.Discurd()
+	defer c.Drop()
 	for {
 		if readNum >= len(b) {
 			break

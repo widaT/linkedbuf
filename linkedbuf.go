@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 )
 
+const GcFrequency int = 6
 const BLOCKSIZE int = 2
 
 const (
@@ -86,15 +87,14 @@ func New() *LinkedBuffer {
 }
 
 func (buf *LinkedBuffer) growth() {
-	//buf.Gc()
-
-	//buf.lock.Lock()
+	if buf.nextBlockIndex%GcFrequency == 0 {
+		buf.Gc()
+	}
 	block := NewBlock(buf.nextBlockIndex)
 	buf.l.PushBack(block)
 	buf.nextBlockIndex++
 	buf.wp.pos = 0
 	buf.wp.b = block
-	//buf.lock.Unlock()
 }
 
 func (buf *LinkedBuffer) NexWriteBlock() []byte {
@@ -220,11 +220,35 @@ func (c *ConpositeBuf) ReadN(n int) ([]byte, error) {
 	return bigB, nil
 }
 
-/* func (c *ConpositeBuf) Rest() {
-	c.read = 0
-} */
+//Peek return bytes but not move the read point
+func (c *ConpositeBuf) Peek(n int) (b []byte, err error) {
+	if n > c.Bufferd() {
+		return nil, errors.New("not enough data")
+	}
+	b, err = c.ReadN(n)
+	if err != nil {
+		return
+	}
+	c.read -= len(b)
+	return
+}
 
-func (c *ConpositeBuf) Discurd() {
+func (c *ConpositeBuf) Discurd(n int) error {
+	if n < 0 {
+		return errors.New("Parameter error")
+	}
+
+	if n > c.length {
+		return errors.New("not enough data")
+	}
+
+	if c.read+n <= c.length {
+		c.read += n
+	}
+	return nil
+}
+
+func (c *ConpositeBuf) Drop() {
 	for _, s := range c.segments {
 		s.Drop()
 	}
