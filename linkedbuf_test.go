@@ -1,72 +1,40 @@
-package linkedbuf
+package buf
 
 import (
-	"bytes"
-	"io"
 	"testing"
 )
 
-func TestLinkedBuffer(t *testing.T) {
+func TestBuf(t *testing.T) {
 
-	b := []byte("123456789")
-
-	linkedbuf := New()
-
-	readNum := 0
-
-	c := ConpositeBuf{}
-
+	l := New()
+	c := make([]byte, 98982)
+	n := 0
 	for {
-		if readNum >= len(b) {
+		if n >= len(c) {
 			break
 		}
-		buf := linkedbuf.NexWriteBlock()
-		n := copy(buf, b[readNum:])
-		s := linkedbuf.MoveWritePiont(n)
-		c.Wrap(s)
-		readNum += n
+		b := l.NexWritablePos()
+		num := copy(b, c[n:])
+		l.MoveWritePiont(num)
+		n += num
 	}
 
-	t.Errorf("%d", c.length)
+	t.Errorf("%d", l.Buffered())
 
-	data := make([]byte, 10)
-	n, err := c.Read(data)
-
-	t.Errorf("%s ,%d,%s", data[:n], n, err)
-
-	c.Drop()
-
-	linkedbuf.Gc()
-
-	linkedbuf.Range(func(b *Block) {
-		t.Error(b)
-	})
+	le := len(l.Bytes())
+	t.Errorf("%d", n)
+	l.Shift(le)
+	t.Errorf("%d", l.Buffered())
 }
 
-func TestIoCopy(t *testing.T) {
-	b := []byte("123456789")
+func TestWrite(t *testing.T) {
 
-	linkedbuf := New()
+	b := []byte("abcdefghizklmn")
 
-	readNum := 0
+	l := New()
 
-	c := &ConpositeBuf{}
-	defer c.Drop()
-	for {
-		if readNum >= len(b) {
-			break
-		}
-		buf := linkedbuf.NexWriteBlock()
-		n := copy(buf, b[readNum:])
-		s := linkedbuf.MoveWritePiont(n)
-		c.Wrap(s)
-		readNum += n
-	}
+	l.Write(b)
 
-	cc := make([]byte, 10)
-	var bbuf = bytes.NewBuffer(cc)
+	t.Errorf("%s,%v,%v", l.Bytes(), l.wp.b, l.wp.pos)
 
-	n, err := io.Copy(bbuf, c)
-
-	t.Errorf("%d %s %s", n, bbuf.Bytes(), err)
 }
