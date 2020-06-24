@@ -123,16 +123,16 @@ func (buf *LinkedBuffer) Write(b []byte) {
 }
 
 //Bytes 返回缓存的所有字节 不会移动read位置 在一个block里头，不会拷贝
-func (buf *LinkedBuffer) Bytes() []byte {
+func (buf *LinkedBuffer) Bytes() ([]byte, int) {
 	if buf == nil {
-		return nil
+		return nil, 0
 	}
 	n := buf.Buffered()
 	wp := buf.wp
 	rp := buf.rp
 	left := BLOCKSIZE - rp.pos
 	if n <= left {
-		return rp.b.data[rp.pos:wp.pos]
+		return rp.b.data[rp.pos:wp.pos], n
 	}
 	b := make([]byte, n)
 	nn := 0
@@ -142,7 +142,7 @@ func (buf *LinkedBuffer) Bytes() []byte {
 		block = block.next
 		nn += copy(b[nn:], block.data[:min(n-nn, BLOCKSIZE)])
 	}
-	return b
+	return b, n
 }
 
 //Shift 移动read位置

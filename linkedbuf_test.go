@@ -21,20 +21,8 @@ func TestBuf(t *testing.T) {
 
 	t.Errorf("%d", l.Buffered())
 
-	le := len(l.Bytes())
+	_, le := l.Bytes()
 	t.Errorf("%d", n)
 	l.Shift(le)
 	t.Errorf("%d", l.Buffered())
-}
-
-func TestWrite(t *testing.T) {
-
-	b := []byte("abcdefghizklmn")
-
-	l := New()
-
-	l.Write(b)
-
-	t.Errorf("%s,%v,%v", l.Bytes(), l.wp.b, l.wp.pos)
-
 }
