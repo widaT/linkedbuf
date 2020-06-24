@@ -103,6 +103,9 @@ func (buf *LinkedBuffer) MoveWritePiont(n int) {
 }
 
 func (buf *LinkedBuffer) Write(b []byte) {
+	if buf == nil {
+		buf = New()
+	}
 	wp := buf.wp
 	left := BLOCKSIZE - wp.pos
 	length := len(b)
@@ -121,6 +124,9 @@ func (buf *LinkedBuffer) Write(b []byte) {
 
 //Bytes 返回缓存的所有字节 不会移动read位置 在一个block里头，不会拷贝
 func (buf *LinkedBuffer) Bytes() []byte {
+	if buf == nil {
+		return nil
+	}
 	n := buf.Buffered()
 	wp := buf.wp
 	rp := buf.rp
@@ -248,6 +254,9 @@ func min(a, b int) int {
 
 //Buffered 返回缓存大小
 func (buf *LinkedBuffer) Buffered() int {
+	if buf == nil {
+		return 0
+	}
 	wp := buf.wp
 	rp := buf.rp
 	n := wp.b.blockIndex - rp.b.blockIndex
