@@ -175,21 +175,21 @@ func (buf *LinkedBuffer) Shift(n int) {
 }
 
 //ReadN 返回缓存中的前n个字节 不会移动read位置，在一个block里头，不会拷贝
-func (buf *LinkedBuffer) ReadN(n int) (int, []byte) {
+func (buf *LinkedBuffer) ReadN(n int) ([]byte, int) {
 	if n == 0 {
-		return 0, nil
+		return nil, 0
 	}
 	wp := buf.wp
 	rp := buf.rp
 	if wp.b == rp.b && wp.pos == rp.pos {
-		return 0, nil
+		return nil, 0
 	}
 	if n > buf.Buffered() {
 		n = buf.Buffered()
 	}
 	nn := 0
 	if len(rp.b.data[rp.pos:]) >= n {
-		return n, rp.b.data[rp.pos : rp.pos+n]
+		return rp.b.data[rp.pos : rp.pos+n], n
 	}
 
 	b := make([]byte, n)
@@ -199,7 +199,7 @@ func (buf *LinkedBuffer) ReadN(n int) (int, []byte) {
 		block = block.next
 		nn += copy(b[nn:], block.data[:min(n-nn, BLOCKSIZE)])
 	}
-	return n, b
+	return b, n
 }
 
 //Read 返回缓存中的字节拷贝到b 会移动read位置，会发生拷贝
