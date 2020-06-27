@@ -130,8 +130,7 @@ func (buf *LinkedBuffer) Bytes() ([]byte, int) {
 	n := buf.Buffered()
 	wp := buf.wp
 	rp := buf.rp
-	left := BLOCKSIZE - rp.pos
-	if n <= left {
+	if wp.b == rp.b {
 		return rp.b.data[rp.pos:wp.pos], n
 	}
 	b := make([]byte, n)
